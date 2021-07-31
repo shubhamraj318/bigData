@@ -1,5 +1,5 @@
 git add .
 git commit -m "big-data-training"
-git push
+git push --force
 
 pause
