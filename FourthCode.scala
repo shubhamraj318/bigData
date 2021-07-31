@@ -16,6 +16,7 @@ object FourthCode{
   val textFile=sc.textFile("C:/sr.log")
   val x = textFile.count()
   println(x)
+  println(x)
     
   }
   
