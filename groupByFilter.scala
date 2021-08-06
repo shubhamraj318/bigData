@@ -157,3 +157,99 @@ scala>     .show(false)
 +----------+----------+-----------------+---------+---------+
 
 
+val emp = Seq((1,"Smith",1,"2018","10","M",3000),(2,"Rose",1,"2010","20","M",4000),(3,"Williams",1,"2010","10","M",1000),(4,"Jones",2,"2005","10","F",2000),(5,"Brown",2,"2010","40","",-1),(6,"Brown",2,"2010","50","",-1))
+emp: Seq[(Int, String, Int, String, String, String, Int)] = List((1,Smith,1,2018,10,M,3000), (2,Rose,1,2010,20,M,4000), (3,Williams,1,2010,10,M,1000), (4,Jones,2,2005,10,F,2000), (5,Brown,2,2010,40,"",-1), (6,Brown,2,2010,50,"",-1))
+
+scala>
+
+scala> val empColumns = Seq("emp_id","name","superior_emp_id","year_joined","emp_dept_id","gender","salary")
+empColumns: Seq[String] = List(emp_id, name, superior_emp_id, year_joined, emp_dept_id, gender, salary)
+
+scala>
+
+scala> import spark.sqlContext.implicits._
+import spark.sqlContext.implicits._
+
+scala>
+
+scala> val empDF = emp.toDF(empColumns:_*)
+empDF: org.apache.spark.sql.DataFrame = [emp_id: int, name: string ... 5 more fields]
+
+scala>
+
+scala> > empDF.show(false)
+<console>:1: error: ';' expected but '.' found.
+       > empDF.show(false)
+              ^
+
+scala>
+
+scala>  empDF.show(false)
++------+--------+---------------+-----------+-----------+------+------+
+|emp_id|name    |superior_emp_id|year_joined|emp_dept_id|gender|salary|
++------+--------+---------------+-----------+-----------+------+------+
+|1     |Smith   |1              |2018       |10         |M     |3000  |
+|2     |Rose    |1              |2010       |20         |M     |4000  |
+|3     |Williams|1              |2010       |10         |M     |1000  |
+|4     |Jones   |2              |2005       |10         |F     |2000  |
+|5     |Brown   |2              |2010       |40         |      |-1    |
+|6     |Brown   |2              |2010       |50         |      |-1    |
++------+--------+---------------+-----------+-----------+------+------+
+
+
+scala> val dept = Seq(("Finance",10),("Marketing",20),("Sales",30),("IT",40))
+dept: Seq[(String, Int)] = List((Finance,10), (Marketing,20), (Sales,30), (IT,40))
+
+scala> val deptColumns = Seq("dept_name","dept_id")
+deptColumns: Seq[String] = List(dept_name, dept_id)
+
+scala>
+
+scala> val deptDF = dept.toDF(deptColumns:_*)
+deptDF: org.apache.spark.sql.DataFrame = [dept_name: string, dept_id: int]
+
+scala>
+
+scala> deptDF.show(false)
++---------+-------+
+|dept_name|dept_id|
++---------+-------+
+|Finance  |10     |
+|Marketing|20     |
+|Sales    |30     |
+|IT       |40     |
++---------+-------+
+
+
+scala> empDF.join(deptDF,empDF("emp_dept_id") === deptDF("dept_id"),"inner").show(false)
++------+--------+---------------+-----------+-----------+------+------+---------+-------+
+|emp_id|name    |superior_emp_id|year_joined|emp_dept_id|gender|salary|dept_name|dept_id|
++------+--------+---------------+-----------+-----------+------+------+---------+-------+
+|1     |Smith   |1              |2018       |10         |M     |3000  |Finance  |10     |
+|2     |Rose    |1              |2010       |20         |M     |4000  |Marketing|20     |
+|3     |Williams|1              |2010       |10         |M     |1000  |Finance  |10     |
+|4     |Jones   |2              |2005       |10         |F     |2000  |Finance  |10     |
+|5     |Brown   |2              |2010       |40         |      |-1    |IT       |40     |
++------+--------+---------------+-----------+-----------+------+------+---------+-------+
+
+
+
+
+
+
+
+scala> empDF.join(deptDF,empDF("emp_dept_id") === deptDF("dept_id"),"outer").show(false)
++------+--------+---------------+-----------+-----------+------+------+---------+-------+
+|emp_id|name    |superior_emp_id|year_joined|emp_dept_id|gender|salary|dept_name|dept_id|
++------+--------+---------------+-----------+-----------+------+------+---------+-------+
+|2     |Rose    |1              |2010       |20         |M     |4000  |Marketing|20     |
+|5     |Brown   |2              |2010       |40         |      |-1    |IT       |40     |
+|1     |Smith   |1              |2018       |10         |M     |3000  |Finance  |10     |
+|3     |Williams|1              |2010       |10         |M     |1000  |Finance  |10     |
+|4     |Jones   |2              |2005       |10         |F     |2000  |Finance  |10     |
+|6     |Brown   |2              |2010       |50         |      |-1    |null     |null   |
+|null  |null    |null           |null       |null       |null  |null  |Sales    |30     |
++------+--------+---------------+-----------+-----------+------+------+---------+-------+
+
+
+
