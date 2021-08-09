@@ -332,3 +332,168 @@ scala>     .show(false)
 +----------+----------+-----------------+---------+---------+
 
 
+val goalsDF = Seq(
+     |   ("messi", 2),
+     |   ("messi", 1),
+     |   ("pele", 3),
+     |   ("pele", 1)
+     | ).toDF("name", "goals")
+goalsDF: org.apache.spark.sql.DataFrame = [name: string, goals: int]
+
+scala> goalsDF.show()
++-----+-----+
+| name|goals|
++-----+-----+
+|messi|    2|
+|messi|    1|
+| pele|    3|
+| pele|    1|
++-----+-----+
+
+
+scala> import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions._
+
+scala> goalsDF
+res1: org.apache.spark.sql.DataFrame = [name: string, goals: int]
+
+scala>   .groupBy("name")
+res2: org.apache.spark.sql.RelationalGroupedDataset = RelationalGroupedDataset: [grouping expressions: [name: string], value: [name: string, goals: int], type: GroupBy]
+
+scala>   .agg(sum("goals"))
+res3: org.apache.spark.sql.DataFrame = [name: string, sum(goals): bigint]
+
+scala>   .show()
++-----+----------+
+| name|sum(goals)|
++-----+----------+
+| pele|         4|
+|messi|         3|
++-----+----------+
+
+
+
+
+scala> goalsDF
+res5: org.apache.spark.sql.DataFrame = [name: string, goals: int]
+
+scala>   .groupBy("name")
+res6: org.apache.spark.sql.RelationalGroupedDataset = RelationalGroupedDataset: [grouping expressions: [name: string], value: [name: string, goals: int], type: GroupBy]
+
+scala>   .sum()
+res7: org.apache.spark.sql.DataFrame = [name: string, sum(goals): bigint]
+
+scala>   .show()
++-----+----------+
+| name|sum(goals)|
++-----+----------+
+| pele|         4|
+|messi|         3|
++-----+----------+
+
+
+scala> val studentsDF = Seq(
+     |   ("mario", "italy", "europe"),
+     |   ("stefano", "italy", "europe"),
+     |   ("victor", "spain", "europe"),
+     |   ("li", "china", "asia"),
+     |   ("yuki", "japan", "asia"),
+     |   ("vito", "italy", "europe")
+     | ).toDF("name", "country", "continent")
+studentsDF: org.apache.spark.sql.DataFrame = [name: string, country: string ... 1 more field]
+
+scala> studentsDF
+res9: org.apache.spark.sql.DataFrame = [name: string, country: string ... 1 more field]
+
+scala>   .groupBy("continent", "country")
+res10: org.apache.spark.sql.RelationalGroupedDataset = RelationalGroupedDataset: [grouping expressions: [continent: string, country: string], value: [name: string, country: string ... 1 more field], type: GroupBy]
+
+scala>   .agg(count("*"))
+res11: org.apache.spark.sql.DataFrame = [continent: string, country: string ... 1 more field]
+
+scala>   .show()
++---------+-------+--------+
+|continent|country|count(1)|
++---------+-------+--------+
+|   europe|  italy|       3|
+|     asia|  japan|       1|
+|   europe|  spain|       1|
+|     asia|  china|       1|
++---------+-------+--------+
+
+
+scala>
+
+scala> studentsDF
+res13: org.apache.spark.sql.DataFrame = [name: string, country: string ... 1 more field]
+
+scala>   .groupBy("continent", "country")
+res14: org.apache.spark.sql.RelationalGroupedDataset = RelationalGroupedDataset: [grouping expressions: [continent: string, country: string], value: [name: string, country: string ... 1 more field], type: GroupBy]
+
+scala>   .count()
+res15: org.apache.spark.sql.DataFrame = [continent: string, country: string ... 1 more field]
+
+scala>   .show()
++---------+-------+-----+
+|continent|country|count|
++---------+-------+-----+
+|   europe|  italy|    3|
+|     asia|  japan|    1|
+|   europe|  spain|    1|
+|     asia|  china|    1|
++---------+-------+-----+
+
+
+scala> val hockeyPlayersDF = Seq(
+     |   ("gretzky", 40, 102, 1990),
+     |   ("gretzky", 41, 122, 1991),
+     |   ("gretzky", 31, 90, 1992),
+     |   ("messier", 33, 61, 1989),
+     |   ("messier", 45, 84, 1991),
+     |   ("messier", 35, 72, 1992),
+     |   ("messier", 25, 66, 1993)
+     | ).toDF("name", "goals", "assists", "season")
+hockeyPlayersDF: org.apache.spark.sql.DataFrame = [name: string, goals: int ... 2 more fields]
+
+scala> hockeyPlayersDF
+res17: org.apache.spark.sql.DataFrame = [name: string, goals: int ... 2 more fields]
+
+scala>   .where($"season".isin("1991", "1992"))
+res18: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [name: string, goals: int ... 2 more fields]
+
+scala>   .groupBy("name")
+res19: org.apache.spark.sql.RelationalGroupedDataset = RelationalGroupedDataset: [grouping expressions: [name: string], value: [name: string, goals: int ... 2 more fields], type: GroupBy]
+
+scala>   .agg(avg("goals"), avg("assists"))
+res20: org.apache.spark.sql.DataFrame = [name: string, avg(goals): double ... 1 more field]
+
+scala>   .show()
++-------+----------+------------+
+|   name|avg(goals)|avg(assists)|
++-------+----------+------------+
+|messier|      40.0|        78.0|
+|gretzky|      36.0|       106.0|
++-------+----------+------------+
+
+
+scala> hockeyPlayersDF
+res22: org.apache.spark.sql.DataFrame = [name: string, goals: int ... 2 more fields]
+
+scala>   .groupBy("name")
+res23: org.apache.spark.sql.RelationalGroupedDataset = RelationalGroupedDataset: [grouping expressions: [name: string], value: [name: string, goals: int ... 2 more fields], type: GroupBy]
+
+scala>   .agg(avg("goals"), avg("assists").as("average_assists"))
+res24: org.apache.spark.sql.DataFrame = [name: string, avg(goals): double ... 1 more field]
+
+scala>   .where($"average_assists" >= 100)
+res25: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [name: string, avg(goals): double ... 1 more field]
+
+scala>   .show()
++-------+------------------+------------------+
+|   name|        avg(goals)|   average_assists|
++-------+------------------+------------------+
+|gretzky|37.333333333333336|104.66666666666667|
++-------+------------------+------------------+
+
+
+s
